@@ -4,7 +4,7 @@ import axios from 'axios'
 // --- IMPORTAÇÃO DOS ASSETS ---
 import logoWhite from './assets/logo_white.png'   // Logo Branco (Cabeçalho do Site)
 import logoColor from './assets/logo_rodape.png'  // Logo Colorido (Relatório de Impressão)
-import headerBg from './assets/bg-top.svg'        // Fundo do site da prefeitura
+import headerBg from './assets/bg-top.png'        // Fundo do site da prefeitura
 
 function App() {
   const [menu, setMenu] = useState('dashboard') 
