@@ -115,7 +115,7 @@ def criar_ambiente():
 # 4. Upload de Foto
 @app.route('/api/fotos/upload', methods=['POST'])
 def upload_foto():
-    # Verifica se a parte do arquivo está presente
+    # Verifica se a parte do arquivo está presenteRO
     if 'file' not in request.files:
         return jsonify({'error': 'Nenhum arquivo enviado'}), 400
     
