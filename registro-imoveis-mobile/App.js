@@ -64,13 +64,30 @@ export default function App() {
   };
 
   const criarVistoria = () => {
+    // Validação simples
+    if (!novoNome || !novoProcesso) {
+      Alert.alert("Atenção", "Preencha o nome e o processo.");
+      return;
+    }
+
     axios.post(`${API_URL}/api/vistorias`, {
-      nome_projeto: novoNome, processo_numero: novoProcesso, departamento: novoDepto, endereco: novoEndereco
+      nome_projeto: novoNome, 
+      processo_numero: novoProcesso, 
+      departamento: novoDepto, 
+      endereco: novoEndereco
     }).then(() => {
       Alert.alert("Sucesso", "Vistoria criada!");
-      setModalVisible(false); carregarDados();
-      setNovoNome(''); setNovoProcesso(''); setNovoEndereco('');
-    }).catch(() => Alert.alert("Erro", "Falha ao criar"));
+      setModalVisible(false); 
+      carregarDados();
+      setNovoNome(''); 
+      setNovoProcesso(''); 
+      setNovoEndereco('');
+    }).catch((error) => {
+      // MOSTRA O ERRO REAL PARA GENTE ENTENDER
+      const mensagemErro = error.response?.data?.error || error.message;
+      Alert.alert("Erro Detalhado", "Ocorreu: " + mensagemErro);
+      console.log(error);
+    });
   };
 
   const adicionarAmbiente = () => {
