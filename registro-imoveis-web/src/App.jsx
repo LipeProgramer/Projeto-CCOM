@@ -97,7 +97,7 @@ function App() {
   // Estado da Validação
   const [msgProcesso, setMsgProcesso] = useState({ text: "", color: "" });
 
-  const API_URL = "http://127.0.0.1:5000";
+  const API_URL = "https://projeto-ccom.onrender.com";
 
   // --- LOADS ---
   const carregarDados = () => {

@@ -35,7 +35,7 @@ export default function App() {
   const [novoAmbienteNome, setNovoAmbienteNome] = useState('');
 
   // --- IP CONFIG ---
-  const API_URL = 'http://192.168.18.5:5000'; 
+  const API_URL = 'https://projeto-ccom.onrender.com'; 
 
   useEffect(() => { carregarDados(); }, []);
 
