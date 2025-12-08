@@ -4,23 +4,17 @@ import psycopg2
 from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
-from supabase import create_client, Client # Nova biblioteca
+from supabase import create_client, Client
 
 app = Flask(__name__)
 CORS(app)
 
-# --- CONFIGURAÇÕES DO SUPABASE (PREENCHA AQUI!) ---
-# 1. Vá em Settings > API para pegar URL e KEY
-# 2. Vá em Settings > Database > Connection String para pegar a DB_URL
-# 3. Lembre de trocar [YOUR-PASSWORD] pela sua senha real
-
-SUPABASE_URL = "https://ruiggbmojudehosevmuu.supabase.co"  # Ex: https://xyz.supabase.co
+SUPABASE_URL = "https://ruiggbmojudehosevmuu.supabase.co" 
 SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ1aWdnYm1vanVkZWhvc2V2bXV1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NTIyMzcwOSwiZXhwIjoyMDgwNzk5NzA5fQ.dJvPFchOTyz6mF0DKOI3f38aoulJbRZpIJyuEyoV7kA" # A chave longa 'service_role'
-DB_CONNECTION_STRING = "postgresql://postgres:[YOUR_PASSWORD]@db.ruiggbmojudehosevmuu.supabase.co:5432/postgres" # Ex: postgresql://postgres...
+DB_CONNECTION_STRING = "postgresql://postgres:supabase@db.ruiggbmojudehosevmuu.supabase.co:5432/postgres"
 
-# Inicializa cliente do Storage
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
-BUCKET_NAME = 'vistorias' # O nome do bucket que criamos
+BUCKET_NAME = 'vistorias'
 
 def get_db_connection():
     # Conecta direto na string do Supabase
