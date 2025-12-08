@@ -4,12 +4,14 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import * as ImagePicker from 'expo-image-picker';
 import { LinearGradient } from 'expo-linear-gradient';
-import * as Print from 'expo-print'; // Biblioteca de PDF
-import * as Sharing from 'expo-sharing'; // Biblioteca de Compartilhar
+import * as Print from 'expo-print';
+import * as Sharing from 'expo-sharing';
+import { Asset } from 'expo-asset'; // Importante para ler o arquivo local
 
 // --- ASSETS ---
 const logoWhite = require('./assets/logo_white.png'); 
 const bgTop = require('./assets/bg-top.png');
+const logoRodape = require('./assets/logo_rodape.png'); // AGORA ESTÁ AQUI!
 
 const { width } = Dimensions.get('window');
 
@@ -112,75 +114,133 @@ export default function App() {
     Linking.openURL(url);
   };
 
-  // --- FUNÇÃO MÁGICA: GERAR PDF ---
+  // --- FUNÇÃO AUXILIAR: Converte qualquer URI (http ou local) para Base64 ---
+  const convertUriToBase64 = async (uri) => {
+    try {
+      const response = await fetch(uri);
+      const blob = await response.blob();
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    } catch(e) { return null; }
+  };
+
+  // --- FUNÇÃO ESPECIAL: Prepara o LOGO LOCAL para o PDF ---
+  const getLogoBase64 = async () => {
+    try {
+      // 1. Carrega o asset do projeto
+      const asset = Asset.fromModule(logoRodape);
+      await asset.downloadAsync(); // Garante que está disponível
+      // 2. Converte o arquivo local para Base64 usando a mesma lógica
+      return await convertUriToBase64(asset.localUri || asset.uri);
+    } catch (error) {
+      console.log("Erro logo:", error);
+      return null;
+    }
+  };
+
+  // --- GERAR PDF ---
   const gerarRelatorioPDF = async () => {
     if(!vistoriaAtual) return;
-
-    // Monta o HTML do relatório (Visual igual ao do Site)
-    const htmlContent = `
-      <html>
-        <head>
-          <style>
-            body { font-family: 'Helvetica', sans-serif; padding: 20px; }
-            .header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; }
-            .logo { height: 80px; margin-bottom: 10px; }
-            h1 { font-size: 18px; text-transform: uppercase; margin: 5px 0; }
-            h2 { font-size: 14px; margin: 0; font-weight: normal; }
-            .info-box { background: #f0f0f0; padding: 15px; border: 1px solid #ccc; margin-bottom: 20px; font-size: 12px; }
-            .row { display: flex; justify-content: space-between; margin-bottom: 5px; }
-            .amb-title { background: #003366; color: white; padding: 5px 10px; font-size: 14px; margin-top: 20px; }
-            .photos { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
-            .photo-card { width: 48%; border: 1px solid #eee; padding: 5px; box-sizing: border-box; }
-            img.photo { width: 100%; height: 150px; object-fit: cover; }
-            .obs { font-size: 10px; color: #555; margin-top: 5px; }
-            .footer { margin-top: 50px; text-align: center; font-size: 10px; border-top: 1px solid #ccc; padding-top: 10px; }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <img src="https://www.maringa.pr.gov.br/cdn/imagens/brasao.png" class="logo" />
-            <h1>Prefeitura do Município de Maringá</h1>
-            <h2>Secretaria Municipal de Logística e Patrimônio (SELOG)</h2>
-            <p style="font-size: 10px;">Av. Centenário, 400 - Maringá PR | (44) 3309-8250</p>
-          </div>
-
-          <div class="info-box">
-            <div class="row"><strong>Projeto:</strong> <span>${vistoriaAtual.nome_projeto}</span></div>
-            <div class="row"><strong>Processo:</strong> <span>${vistoriaAtual.processo_numero}</span></div>
-            <div class="row"><strong>Solicitante:</strong> <span>${vistoriaAtual.departamento}</span></div>
-            <div class="row"><strong>Endereço:</strong> <span>${vistoriaAtual.endereco}</span></div>
-            <div class="row"><strong>Status:</strong> <span>${vistoriaAtual.status}</span></div>
-          </div>
-
-          ${vistoriaAtual.ambientes.map(amb => `
-            <div>
-              <div class="amb-title">📍 ${amb.nome}</div>
-              <div class="photos">
-                ${amb.fotos.map(foto => `
-                  <div class="photo-card">
-                    <img src="${foto.url}" class="photo" />
-                    <div class="obs">Obs: ${foto.descricao || '-'}</div>
-                  </div>
-                `).join('')}
-              </div>
-            </div>
-          `).join('')}
-
-          <div class="footer">
-            Gerado via App SELOG Mobile em ${new Date().toLocaleDateString()}
-          </div>
-        </body>
-      </html>
-    `;
+    
+    Alert.alert("Gerando PDF", "Aguarde, processando...");
 
     try {
-      // 1. Gera o arquivo PDF
+      // 1. Pega o Logo Convertido (Base64)
+      const logoB64 = await getLogoBase64();
+      const logoSrc = logoB64 || "https://www.maringa.pr.gov.br/cdn/imagens/brasao.png"; // Fallback se falhar
+
+      // 2. Processa Fotos da Vistoria (Base64)
+      const ambientesProcessados = await Promise.all(vistoriaAtual.ambientes.map(async (amb) => {
+        const fotosProcessadas = await Promise.all(amb.fotos.map(async (foto) => {
+          const b64 = await convertUriToBase64(foto.url);
+          return { ...foto, url: b64 || foto.url };
+        }));
+        return { ...amb, fotos: fotosProcessadas };
+      }));
+
+      // 3. HTML
+      const htmlContent = `
+        <html>
+          <head>
+            <style>
+              body { font-family: 'Helvetica', sans-serif; padding: 20px; }
+              .header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; }
+              .logo { height: 90px; margin-bottom: 10px; }
+              h1 { font-size: 16px; text-transform: uppercase; margin: 5px 0; font-weight: bold; }
+              h2 { font-size: 14px; margin: 0; font-weight: bold; }
+              h3 { font-size: 14px; margin: 0; font-weight: normal; }
+              .info-box { background: #f8f9fa; padding: 15px; border: 1px solid #ccc; margin-bottom: 20px; font-size: 12px; }
+              .row { display: flex; justify-content: space-between; margin-bottom: 5px; }
+              .amb-title { background: #003366; color: white; padding: 5px 10px; font-size: 14px; margin-top: 20px; font-weight: bold; }
+              .photos { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+              .photo-card { width: 48%; border: 1px solid #eee; padding: 5px; box-sizing: border-box; background: #fff; }
+              img.photo { width: 100%; height: 180px; object-fit: cover; border: 1px solid #ccc; }
+              .obs { font-size: 10px; color: #555; margin-top: 5px; font-style: italic; }
+              .footer { margin-top: 50px; text-align: center; font-size: 10px; border-top: 1px solid #ccc; padding-top: 10px; color: #777; }
+              .address { font-size: 11px; margin-top: 5px; }
+            </style>
+          </head>
+          <body>
+            <div class="header">
+              <img src="${logoSrc}" class="logo" />
+              <h1>Prefeitura do Município de Maringá</h1>
+              <h2>Secretaria Municipal de Logística e Patrimônio (SELOG)</h2>
+              <h3>Diretoria de Patrimônio Imobiliário</h3>
+              <p class="address">
+                Av. Centenário, 400 - Maringá PR | CEP 87050-040 | Telefone: (44) 3309-8250<br/>
+                selog_expediente@maringa.pr.gov.br
+              </p>
+            </div>
+
+            <div class="info-box">
+              <div class="row"><strong>Objeto:</strong> <span>${vistoriaAtual.nome_projeto}</span></div>
+              <div class="row"><strong>Processo:</strong> <span>${vistoriaAtual.processo_numero}</span></div>
+              <div class="row"><strong>Solicitante:</strong> <span>${vistoriaAtual.departamento}</span></div>
+              <div class="row"><strong>Endereço:</strong> <span>${vistoriaAtual.endereco}</span></div>
+              <div class="row"><strong>Status:</strong> <span>${vistoriaAtual.status}</span></div>
+            </div>
+
+            ${ambientesProcessados.length === 0 ? '<p style="text-align:center">Nenhuma foto.</p>' : ''}
+
+            ${ambientesProcessados.map(amb => `
+              <div>
+                <div class="amb-title">📍 ${amb.nome}</div>
+                <div class="photos">
+                  ${amb.fotos.map(foto => `
+                    <div class="photo-card">
+                      <img src="${foto.url}" class="photo" />
+                      <div class="obs">Obs: ${foto.descricao || 'Sem observações.'}</div>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            `).join('')}
+
+            <div style="margin-top: 80px; display: flex; justify-content: space-around;">
+               <div style="text-align: center; font-size: 12px; border-top: 1px solid #000; width: 40%; padding-top: 5px;">
+                 Técnico Responsável
+               </div>
+               <div style="text-align: center; font-size: 12px; border-top: 1px solid #000; width: 40%; padding-top: 5px;">
+                 Diretor de Patrimônio
+               </div>
+            </div>
+
+            <div class="footer">
+              Relatório gerado via App Mobile SELOG em ${new Date().toLocaleDateString()}
+            </div>
+          </body>
+        </html>
+      `;
+
       const { uri } = await Print.printToFileAsync({ html: htmlContent });
-      // 2. Abre o menu de compartilhamento
       await Sharing.shareAsync(uri, { UTI: '.pdf', mimeType: 'application/pdf' });
+
     } catch (error) {
-      Alert.alert("Erro", "Não foi possível gerar o PDF.");
-      console.error(error);
+      Alert.alert("Erro", "Erro ao gerar PDF: " + error.message);
     }
   };
 
@@ -238,7 +298,6 @@ export default function App() {
           <TouchableOpacity onPress={() => abrirMapa(vistoriaAtual.endereco)}><Text style={styles.infoLabel}>Endereço: <Text style={[styles.infoVal, {color: '#0056b3', textDecorationLine: 'underline'}]}>{vistoriaAtual.endereco} 🗺️</Text></Text></TouchableOpacity>
         </View>
 
-        {/* BOTÕES DE AÇÃO: ADICIONAR AMBIENTE / GERAR PDF / FINALIZAR */}
         <View style={{flexDirection:'row', flexWrap:'wrap', gap: 10, marginBottom: 20}}>
           {vistoriaAtual.status !== 'Finalizada' && (
             <TouchableOpacity style={[styles.actionBtn, {backgroundColor:'#e3f2fd', borderColor:'#0056b3'}]} onPress={() => setModalAmbiente(true)}>
@@ -371,10 +430,7 @@ const styles = StyleSheet.create({
   infoBox: { backgroundColor: 'white', padding: 15, borderRadius: 8, marginBottom: 15, elevation: 1 },
   infoLabel: { fontWeight: 'bold', color: '#555', marginBottom: 5 },
   infoVal: { fontWeight: 'normal', color: '#333' },
-  
-  // Botões de Ação na Tela de Detalhes
   actionBtn: { padding: 10, borderRadius: 6, alignItems: 'center', borderWidth:1, marginBottom: 0 },
-
   btnAddEnv: { backgroundColor: '#e3f2fd', padding: 12, borderRadius: 6, alignItems: 'center', marginBottom: 20, borderStyle:'dashed', borderWidth:1, borderColor:'#0056b3' },
   envCard: { backgroundColor: 'white', padding: 15, borderRadius: 8, marginBottom: 15, elevation: 1 },
   envTitle: { fontWeight: 'bold', fontSize: 16, color: '#333', borderBottomWidth: 1, borderColor: '#eee', paddingBottom: 5 },
