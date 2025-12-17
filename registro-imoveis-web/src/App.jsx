@@ -52,38 +52,41 @@ function App() {
     33: "SECOM - Comunicação",
     34: "SECRIANCA - Criança e Adolescente",
     35: "AMETECH - Tecnologia",
-    39: "SEPED - Pessoa com Deficiência",
+    36: "SEPED - Pessoa com Deficiência",
     99: "Comissões e Conselhos",
   };
 
   // LISTA DE SECRETARIAS PARA O DROPDOWN (Seleção Manual)
   const listaSecretariasDropdown = [
-    "SEPAT - Secretaria Municipal de Patrimônio, Compras e Logística",
-    "SELOG - Logística e Compras (05)",
-    "SASC - Secretaria Municipal de Assistência Social e Cidadania",
-    "CGM - Controladoria Geral do Município",
-    "SEMUC - Secretaria Municipal de Cultura",
-    "SEDUC - Secretaria Municipal de Educação",
-    "SESP - Secretaria Municipal de Esportes e Lazer",
-    "SEFAZ - Secretaria Municipal de Fazenda",
-    "GAPRE - Chefia de Gabinete do Prefeito",
-    "SEGE - Secretaria Municipal de Gestão",
-    "SEIDE - Secretaria Municipal de Inovação e Desenvolvimento Econômico",
-    "SEMA - Secretaria Municipal de Meio Ambiente e Bem-Estar Animal",
-    "SEMOB - Secretaria Municipal de Mobilidade Urbana",
-    "SAET - Secretaria de Aceleração Econômica e Turismo",
-    "SEMULHER - Secretaria Municipal da Mulher, Igualdade Racial e Pessoa Idosa",
-    "COMPLIANCE - Secretaria Municipal de Compliance e Controle",
-    "SEMOP - Secretaria de Obras Públicas",
-    "SEPLAN - Secretaria Municipal de Planejamento e Urbanismo",
-    "PROCON - Coordenadoria Municipal de Proteção e Defesa do Consumidor",
-    "SERH - Secretaria Municipal de Recursos Humanos",
-    "SAÚDE - Secretaria Municipal de Saúde",
-    "SEMUSP - Secretaria Municipal de Serviços Públicos",
-    "SSM - Secretaria de Segurança", // ATUALIZADO
-    "AMETRO - Secretaria de Assuntos Metropolitanos e Institucionais", // ATUALIZADO
-    "SETRAB - Secretaria de Trabalho e Renda", // ATUALIZADO
-    "Comissões e Conselhos (Geral)",
+    "GAPRE - Gabinete do Prefeito",
+"PROGE - Procuradoria Geral",
+"SEGOV - Secretaria de Governo",
+"SELOG - Logística e Compras",
+"SEFAZ - Fazenda",
+"SEURBH - Urbanismo e Habitação",
+"SAUDE - Saúde",
+"SEDUC - Educação",
+"SEBEA - Bem-Estar Animal",
+"SEMOB - Mobilidade Urbana",
+"SAET - Secretaria de Aceleração Econômica e Turismo",
+"SAS - Assistência Social",
+"SEMUC - Cultura",
+"SESP - Esportes e Lazer",
+"SEMULHER - Mulher",
+"COMPLIANCE - Secretaria Municipal de Compliance e Controle",
+"SEINFRA - Infraestrutura",
+"SEMOP - Obras Públicas",
+"SEGEP - Gestão de Pessoas",
+"SSM - Secretaria de Segurança",
+"SELURB - Limpeza Urbana",
+"AMETRO - Secretaria de Assuntos Metropolitanos e Institucionais",
+"SETRAB - Secretaria de Trabalho e Renda",
+"SEJUC - Juventude",
+"SECOM - Comunicação",
+"SECRIANCA - Criança e Adolescente",
+"AMETECH - Tecnologia",
+"SEPED - Pessoa com Deficiência",
+"Comissões e Conselhos"
   ];
 
   // Formulários
@@ -166,7 +169,7 @@ function App() {
   const criarVistoria = (e) => {
     e.preventDefault();
     axios
-      .post(`${API_URL}/api/vistorias`, {
+      .post('https://projeto-ccom.onrender.com/api/vistorias', {
         nome_projeto: novoNome,
         processo_numero: novoProcesso,
         departamento: novoDepto,
