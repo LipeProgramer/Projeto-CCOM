@@ -11,7 +11,7 @@ CORS(app)
 
 SUPABASE_URL = "https://ruiggbmojudehosevmuu.supabase.co" 
 SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ1aWdnYm1vanVkZWhvc2V2bXV1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NTIyMzcwOSwiZXhwIjoyMDgwNzk5NzA5fQ.dJvPFchOTyz6mF0DKOI3f38aoulJbRZpIJyuEyoV7kA" # A chave longa 'service_role'
-DB_CONNECTION_STRING = "postgresql://postgres:supabase@db.ruiggbmojudehosevmuu.supabase.co:5432/postgres"
+DB_CONNECTION_STRING = "postgresql://postgres.ruiggbmojudehosevmuu:supabase@aws-0-sa-east-1.pooler.supabase.com:6543/postgres?sslmode=require"
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 BUCKET_NAME = 'vistorias'
